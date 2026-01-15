@@ -1,0 +1,125 @@
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS E:\DockerSql\mysql_docker_project> docker pull mysql:8.0
+8.0: Pulling from library/mysql
+ad9d782f3f87: Download complete
+75d963f8b5a9: Download complete
+a2e746e7b2e3: Download complete
+f34fb977c6ce: Download complete
+2583e052860a: Download complete
+8310b139f7c3: Download complete
+3758af62b8ea: Download complete
+acd41a114e50: Download complete
+b5f4bc928a89: Download complete
+082df7bb4f09: Download complete
+750e74778c5d: Download complete
+Digest: sha256:271aa4b4c84411d52790b340039dc6cea8637ab273546ff15639a77fae6b29f6
+Status: Downloaded newer image for mysql:8.0
+docker.io/library/mysql:8.0
+PS E:\DockerSql\mysql_docker_project> docker run --name mysql_db `
+>> -e MYSQL_ROOT_PASSWORD=root123 `
+>> -e MYSQL_DATABASE=company_db `
+>> -p 3306:3306 `
+>> -d mysql:8.0
+36328259e2053bfa85b472297108971b98e62d3a5f69b41cb94cdaa485e8fcb0
+PS E:\DockerSql\mysql_docker_project>
+PS E:\DockerSql\mysql_docker_project> docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS         PORTS                               NAMES
+36328259e205   mysql:8.0   "docker-entrypoint.s…"   12 seconds ago   Up 5 seconds   0.0.0.0:3306->3306/tcp, 33060/tcp   mysql_db
+PS E:\DockerSql\mysql_docker_project> docker exec -it mysql_db mysql -u root -p
+Enter password:
+ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
+PS E:\DockerSql\mysql_docker_project> docker exec -it mysql_db mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.44 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> USE company_db;
+Database changed
+mysql>
+mysql> CREATE TABLE departments (
+    ->     dept_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     dept_name VARCHAR(100)
+    -> );
+Query OK, 0 rows affected (0.09 sec)
+
+mysql>
+mysql> CREATE TABLE employees (
+    ->     emp_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     emp_name VARCHAR(100),
+    ->     salary INT,
+    ->     dept_id INT,
+    ->     FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+    -> );
+Query OK, 0 rows affected (0.11 sec)
+
+mysql>
+mysql> INSERT INTO departments (dept_name) VALUES
+    -> ('IT'),
+    -> ('HR'),
+    -> ('Finance');
+Query OK, 3 rows affected (0.02 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO employees (emp_name, salary, dept_id) VALUES
+    -> ('Ahmed', 8000, 1),
+    -> ('Sara', 7000, 2),
+    -> ('Omar', 9000, 1),
+    -> ('Laila', 8500, 3);
+Query OK, 4 rows affected (0.02 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM employees;
++--------+----------+--------+---------+
+| emp_id | emp_name | salary | dept_id |
++--------+----------+--------+---------+
+|      1 | Ahmed    |   8000 |       1 |
+|      2 | Sara     |   7000 |       2 |
+|      3 | Omar     |   9000 |       1 |
+|      4 | Laila    |   8500 |       3 |
++--------+----------+--------+---------+
+4 rows in set (0.00 sec)
+
+mysql> SELECT e.emp_name, e.salary, d.dept_name
+    -> FROM employees e
+    -> JOIN departments d
+    -> ON e.dept_id = d.dept_id;
++----------+--------+-----------+
+| emp_name | salary | dept_name |
++----------+--------+-----------+
+| Ahmed    |   8000 | IT        |
+| Omar     |   9000 | IT        |
+| Sara     |   7000 | HR        |
+| Laila    |   8500 | Finance   |
++----------+--------+-----------+
+4 rows in set (0.00 sec)
+
+mysql> SELECT emp_name, salary
+    -> FROM employees
+    -> ORDER BY salary DESC
+    -> LIMIT 1;
++----------+--------+
+| emp_name | salary |
++----------+--------+
+| Omar     |   9000 |
++----------+--------+
+1 row in set (0.00 sec)
+
+mysql> EXIT;
+Bye
+PS E:\DockerSql\mysql_docker_project> docker stop mysql_db
+mysql_db
+PS E:\DockerSql\mysql_docker_project>
